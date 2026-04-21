@@ -1,50 +1,77 @@
-import pandas as pd
+import csv
 import json
 
-def convert_text_to_json_overwrite():
-    # 1. 입출력 파일명 설정 
-    INPUT_FILE = 'npc_character_dialogues_final.csv'
-    OUTPUT_FILE = 'npc_dialogues_message_format.csv'
+# ============================================
+# 설정
+# ============================================
+INPUT_PATH  = "./final_dataset.csv"
+OUTPUT_PATH = "./dataset_chatml.jsonl"   # 학습용 최종 파일
+VAL_RATIO   = 0.1                        # 10%를 검증용으로 분리
+SEED        = 42
 
-    try:
-        df = pd.read_csv(INPUT_FILE)
-    except FileNotFoundError:
-        print(f"오류: {INPUT_FILE} 파일을 찾을 수 없습니다.")
-        return
+# ============================================
+# 1. CSV 불러오기
+# ============================================
+data = []
+with open(INPUT_PATH, "r", encoding="utf-8-sig") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        conversations = json.loads(row["conversations"])
+        data.append(conversations)
 
-    json_messages_list = []
+print(f"불러온 데이터: {len(data)}개")
 
-    print("CSV 내부 텍스트를 JSON 배열로 변환하여 'Text' 컬럼에 덮어쓰는 작업을 시작합니다...")
 
-    for index, row in df.iterrows():
-        # Text 컬럼의 데이터를 가져와 '__eou__' 기준으로 분리
-        text = str(row['Text'])
-        utterances = [u.strip() for u in text.split('__eou__') if u.strip()]
-        
-        messages = []
-        
-        # 대화 순서에 따라 역할(Role) 부여 (홀수: user, 짝수: assistant)
-        for i, utterance in enumerate(utterances):
-            role = "user" if i % 2 == 0 else "assistant"
-            
-            messages.append({
-                "role": role,
-                "content": utterance
-            })
-            
-        # 리스트를 JSON 문자열로 변환 (ensure_ascii=False 로 한국어 등 다국어 깨짐 방지)
-        json_string = json.dumps(messages, ensure_ascii=False)
-        json_messages_list.append(json_string)
+# ============================================
+# 2. ChatML 형식으로 변환
+# ============================================
+def to_chatml(conversations):
+    """대화 리스트를 ChatML 문자열로 변환"""
+    chatml = ""
+    for msg in conversations:
+        role = msg["role"]
+        content = msg["content"]
+        chatml += f"<|im_start|>{role}\n{content}<|im_end|>\n"
+    return chatml.strip()
 
-    # [수정된 핵심 로직] 새로운 컬럼을 만들지 않고 기존 'Text' 컬럼에 바로 덮어씌움
-    df['Text'] = json_messages_list
 
-    # 5. CSV 파일로 저장
-    df.to_csv(OUTPUT_FILE, index=False, encoding='utf-8-sig')
+chatml_data = []
+for conv in data:
+    text = to_chatml(conv)
+    chatml_data.append({"text": text})
 
-    print("=== 작업 완료 ===")
-    print(f"총 {len(df)}개의 대화가 JSON 형식으로 'Text' 컬럼에 성공적으로 덮어씌워졌습니다.")
-    print(f"결과 파일: {OUTPUT_FILE}")
+# 변환 확인
+print("\n=== 변환 샘플 ===")
+print(chatml_data[0]["text"][:500])
+print("...")
 
-if __name__ == "__main__":
-    convert_text_to_json_overwrite()
+
+# ============================================
+# 3. Train / Val 분리
+# ============================================
+import random
+random.seed(SEED)
+random.shuffle(chatml_data)
+
+val_size = int(len(chatml_data) * VAL_RATIO)
+train_data = chatml_data[val_size:]
+val_data   = chatml_data[:val_size]
+
+print(f"\nTrain: {len(train_data)}개")
+print(f"Val:   {len(val_data)}개")
+
+
+# ============================================
+# 4. JSONL로 저장
+# ============================================
+train_path = OUTPUT_PATH.replace(".jsonl", "_train.jsonl")
+val_path   = OUTPUT_PATH.replace(".jsonl", "_val.jsonl")
+
+for path, dataset in [(train_path, train_data), (val_path, val_data)]:
+    with open(path, "w", encoding="utf-8") as f:
+        for item in dataset:
+            f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+print(f"\n저장 완료:")
+print(f"  Train: {train_path}")
+print(f"  Val:   {val_path}")

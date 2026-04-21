@@ -1,6 +1,7 @@
 from openai import OpenAI
 
-MODEL_NAME = "QuantTrio/Qwen3.5-4B-AWQ"
+# [수정됨] 기존 원본 모델 이름 대신, vLLM 서버 켤 때 등록한 LoRA 별명(my_npc)을 적어줍니다.
+MODEL_NAME = "my_npc"
 
 client = OpenAI(
     base_url="http://127.0.0.1:8000/v1",
@@ -10,15 +11,16 @@ client = OpenAI(
 messages = [
     {
         "role": "system",
-        "content":(
-            "당신은 친절한 AI입니다. "
-            "사용자에게 항상 한국어로만 답하세요. "
-            "답변은 자연스러운 구어체로, 짧고 간결하게 1~2문장으로 답하세요. "
+        "content": (
+            "You are a blacksmith. "
+            "You are taciturn and a person of few words. "
+            "Answer in a natural spoken tone, keeping it short and concise within 1 to 2 sentences. "
+            "Stay immersed in your character and handle any anachronistic topics naturally."
         )
     }
 ]
 
-print("로컬 Qwen3.5-4B-AWQ 채팅 시작. 종료하려면 quit 또는 exit 입력.\n")
+print("로컬 Qwen3.5-4B-AWQ (NPC 파인튜닝 패치 적용됨) 채팅 시작. 종료하려면 quit 또는 exit 입력.\n")
 
 while True:
     user_input = input("You> ").strip()
@@ -45,5 +47,6 @@ while True:
 
     answer = response.choices[0].message.content
     print(f"\nAI> {answer}\n")
-
+    
+    # AI의 답변도 대화 기록에 추가하여 문맥을 유지합니다.
     messages.append({"role": "assistant", "content": answer})
