@@ -17,5 +17,5 @@ sleep 120  # 모델 로딩 시간
 python test.py &
 sleep 3
 
-# ngrok 실행 (포그라운드)
-ngrok http 8080
+# ngrok 실행 (고정 도메인)
+ngrok http 8080 --url bullring-reactive-ensure.ngrok-free.dev
