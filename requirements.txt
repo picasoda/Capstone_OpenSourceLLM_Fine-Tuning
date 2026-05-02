@@ -9,32 +9,21 @@ pip install uv #다운로드 가속기
 uv pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu128 #CUDA버전에 맞는 PyTorch 설치
 uv pip install "vllm==0.19.0" "openai>=1.0.0" "accelerate>=1.0.0" "huggingface_hub>=0.30.0" #vLLM과 관련 라이브러리 설치
 uv pip install  triton-kernels
+
 #모델 arguments 설정
 vllm serve QuantTrio/Qwen3.5-4B-AWQ \
-  --host 127.0.0.1 \
+  --host 0.0.0.0 \
   --port 8000 \
-  --tensor-parallel-size 1 \
-  --gpu-memory-utilization 0.85 \
-  --cpu-offload-gb 0 \
   --max-model-len 1024 \
   --max-num-seqs 1 \
   --dtype half \
+  --gpu-memory-utilization 0.85 \
   --language-model-only \
   --enforce-eager
 
-vllm serve QuantTrio/Qwen3.5-4B-AWQ \
-  --host 127.0.0.1 \
-  --port 8000 \
-  --tensor-parallel-size 1 \
-  --gpu-memory-utilization 0.85 \
-  --cpu-offload-gb 0 \
-  --max-model-len 1024 \
-  --max-num-seqs 1 \
-  --dtype half \
-  --language-model-only \
-  --enforce-eager \
-  --enable-lora \
-  --lora-modules my_npc=./Qwen3.5_4B_AWQ_v1
+#start_all.sh 실행(api 서버 열기)
+chmod +x start_all.sh
+./start_all.sh
 
 #제거한거
 #pip uninstall -y triton-kernels
