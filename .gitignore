@@ -3,3 +3,4 @@ llm_env/
 
 # 무거운 AI 모델 및 데이터 폴더 무시
 my_models/
+ollama_models/

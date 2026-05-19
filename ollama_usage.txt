@@ -1,0 +1,21 @@
+#모델 이름: qwen3.5:9b
+
+#가상환경 설정
+python3 -m venv llm_env
+source llm_env/bin/activate
+
+# 9B 모델 받기 (6.6GB, 256K 컨텍스트, 텍스트+이미지)
+ollama pull qwen3.5:9b
+
+# 실행
+ollama run qwen3.5:9b
+
+# GPU 1번만 사용하도록 지정 (0번은 다른 사람이 쓰는 중)
+export CUDA_VISIBLE_DEVICES=1
+
+# ollama 서버 재시작
+pkill ollama
+ollama serve &
+
+# 모델 실행
+ollama run qwen3.5:9b
