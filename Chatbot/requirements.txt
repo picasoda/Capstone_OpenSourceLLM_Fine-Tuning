@@ -4,3 +4,4 @@ semantic-router
 ollama
 fastapi
 uvicorn
+python-dotenv

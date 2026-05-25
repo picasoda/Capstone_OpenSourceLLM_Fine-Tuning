@@ -47,25 +47,25 @@
 
 ---
 
-## 5. 벡터 DB 및 검색 <- 현재 (`src/ingest.py`, `src/search.py`)
+## 5. 벡터 DB 및 검색 (`src/ingest.py`, `src/search.py`)
 
 ### 5.1 색인 (`ingest.py`)
-- [ ] ChromaDB 클라이언트 초기화 (`./db/`)
-- [ ] 컬렉션 4개 생성: items, npcs, locations, lore
-- [ ] JSON → 문서 변환 (아이템은 common + detail 합쳐서 임베딩)
-- [ ] 메타데이터에 category 포함
-- [ ] 색인 스크립트 1회 실행
+- [x] ChromaDB 클라이언트 초기화 (`./db/`)
+- [x] 컬렉션 4개 생성: items, npcs, locations, lore
+- [x] JSON → 문서 변환 (아이템은 common + detail 합쳐서 임베딩)
+- [x] 메타데이터에 category 포함
+- [x] 색인 스크립트 1회 실행
 
 ### 5.2 검색 (`search.py`)
-- [ ] `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)` 작성
-- [ ] `TOP_K = 3`, `SEARCH_THRESHOLD = 0.4` 적용
-- [ ] 검색 결과 0개 신호 반환 로직
-- [ ] NPC 권한 필터링 함수 (`filter_by_permission`)
+- [x] `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)` 작성
+- [x] `TOP_K = 3`, `SEARCH_THRESHOLD = 0.4` 적용
+- [x] 검색 결과 0개 신호 반환 로직
+- [x] NPC 권한 필터링 함수 (`filter_by_permission`)
   - common_only / category_detail / 카테고리 불일치 분기
 
 ---
 
-## 6. LLM 연동 (`src/llm.py`)
+## 6. LLM 연동 (`src/llm.py`) <- 현재
 
 - [ ] Ollama 클라이언트 래퍼 함수 작성
 - [ ] 시스템 프롬프트 + 유저 메시지 → 응답

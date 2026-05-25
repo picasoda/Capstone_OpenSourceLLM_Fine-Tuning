@@ -1,6 +1,13 @@
+from __future__ import annotations
+
 import os
 import sys
+
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
+
+# .env에서 HF_HOME 등 환경변수를 자동 로드 (이미 설정된 값은 덮어쓰지 않음)
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"), override=False)
 
 _model: SentenceTransformer | None = None
 

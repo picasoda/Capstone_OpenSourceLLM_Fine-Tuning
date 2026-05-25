@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda env list)",
+      "Bash(ollama list *)",
+      "Bash(ollama ps *)"
+    ]
+  }
+}

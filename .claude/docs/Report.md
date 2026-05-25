@@ -64,6 +64,32 @@ bge-m3는 한국어 문장 간 코사인 유사도가 전반적으로 높아(0.4
 
 ---
 
+---
+
+## 5단계 — ingest.py / search.py (벡터 DB 및 검색)
+
+### ChromaDB cosine 메트릭 필수 지정 이유
+chromadb 기본 거리 함수는 L2(유클리드)입니다. bge-m3가 반환하는 임베딩은 정규화된 단위 벡터이므로 cosine 거리 함수를 사용해야 합니다.
+
+L2 거리로 컬렉션을 생성하면:
+- 실제 cosine 유사도 0.53인 문서 쌍의 L2 거리 ≈ 0.97
+- `similarity = 1 - 0.97 = 0.03` → SEARCH_THRESHOLD(0.4) 미달 → 모든 결과 필터링
+
+해결: 컬렉션 생성 시 `metadata={"hnsw:space": "cosine"}` 명시. cosine 메트릭에서 distance = 1 - cosine_similarity이므로 `similarity = 1 - distance` 계산이 올바르게 적용됩니다.
+
+### Python 3.13에서 `X | None` 타입 힌트 런타임 오류
+`chromadb.Client`는 클래스가 아닌 팩토리 함수이므로 `chromadb.Client | None` 표현식이 런타임 TypeError를 발생시킵니다. `from __future__ import annotations`를 파일 상단에 추가해 모든 어노테이션을 지연(string) 평가로 전환해 해결했습니다.
+
+### filter_by_permission 설계
+권한 필터링을 검색 단계에서 처리함으로써 LLM이 권한 외 정보를 절대 볼 수 없게 합니다.
+- `common_only` NPC: 모든 아이템의 `common` 필드만 반환
+- `category_detail` NPC + 해당 카테고리: `common + detail` 반환 (`permission: "full"`)
+- `category_detail` NPC + 불일치 카테고리: `common`만 반환 (`permission: "common_only"`)
+
+반환 딕셔너리에 `permission` 필드를 포함하여 chatbot.py에서 `append_permission_instruction` 적용 여부를 판단할 수 있도록 했습니다.
+
+---
+
 ## 테스트 결과 요약
 
 | 단계 | 항목 | 결과 |
@@ -72,3 +98,5 @@ bge-m3는 한국어 문장 간 코사인 유사도가 전반적으로 높아(0.4
 | 환경 | Ollama qwen3.5:9b | 정상 실행 중 |
 | 3단계 | bge-m3 로드 | 정상 (인터넷 접근으로 최초 다운로드) |
 | 4단계 | 라우팅 14개 케이스 | 14/14 통과 |
+| 5단계 | 색인 | items 39 / npcs 3 / locations 12 / lore 8 |
+| 5단계 | 권한 필터링 | 약초상+herb→full / 영주+weapon→common_only / 대장장이+herb→common_only (불일치) / 임계값 미달→0개 모두 정상 |
