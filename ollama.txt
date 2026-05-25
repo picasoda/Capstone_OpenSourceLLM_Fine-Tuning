@@ -10,9 +10,6 @@ ollama pull qwen3.5:9b
 # 실행
 ollama run qwen3.5:9b
 
-# GPU 1번만 사용하도록 지정 (0번은 다른 사람이 쓰는 중)
-export CUDA_VISIBLE_DEVICES=1
-
 # ollama 서버 재시작
 pkill ollama
 ollama serve &
