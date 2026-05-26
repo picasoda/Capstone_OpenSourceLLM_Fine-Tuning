@@ -90,6 +90,42 @@ L2 거리로 컬렉션을 생성하면:
 
 ---
 
+## 6단계 — llm.py (Ollama 래퍼)
+
+### MAX_RETRIES = 3, RETRY_DELAY = 1.0s
+LLM 호출은 네트워크/프로세스 일시 오류에 의해 간헐적으로 실패할 수 있습니다. 3회 재시도 + 1초 대기로 안정성을 높이되, 전부 실패 시 RuntimeError를 호출부(chatbot.py)로 전파합니다. fallback 처리는 LLM 래퍼의 책임이 아닙니다.
+
+### response.message.content (dot notation)
+ollama Python 라이브러리 0.6.x는 `ChatResponse` 데이터클래스를 반환합니다. `response['message']['content']` 딕셔너리 접근 대신 `response.message.content` dot notation을 사용해 타입 힌트와 IDE 지원을 활용합니다.
+
+---
+
+## 7단계 — persona.py (NPC 프롬프트 빌더)
+
+### build_jailbreak_prompt가 LLM 프롬프트가 아닌 고정 응답 반환
+jailbreak 입력에 LLM을 쓰면 LLM이 시스템 조작 시도에 노출됩니다. chatbot.md 규칙대로 jailbreak는 LLM 미사용, NPC 말투에 맞는 고정 문자열을 반환합니다. 함수 이름은 규칙 파일 명세를 그대로 따랐습니다.
+
+### _tone_rules 분리
+NPC별 유도 규칙(약초상↔대장장이 교차 유도, 영주 디테일 불가)은 모든 라우트 프롬프트에 공통 적용됩니다. `_base_prompt` + `_tone_rules`로 분리해 각 빌더 함수에서 결합하면 중복 없이 일관성을 유지할 수 있습니다.
+
+### 상황별 추가 프롬프트를 별도 함수로
+`append_no_result_instruction`, `append_permission_instruction`은 기존 프롬프트 문자열에 지시를 덧붙이는 순수 함수입니다. chatbot.py가 조건에 따라 선택적으로 호출하므로 persona.py는 빌딩 블록만 제공합니다.
+
+---
+
+## 8단계 — chatbot.py (메인 파이프라인)
+
+### jailbreak에서 LLM 즉시 차단
+jailbreak 라우트는 프롬프트 빌딩 없이 `build_jailbreak_prompt()`의 고정 문자열을 바로 반환합니다. LLM 호출 자체가 없으므로 어떠한 시스템 조작 시도도 모델에 전달되지 않습니다.
+
+### _has_permission_gap: category_detail NPC + common_only 결과
+권한 밖 유도 지시(`append_permission_instruction`)는 item_query에서만 의미 있습니다. npc_query·location_query는 search.py에서 항상 common_only를 반환하므로, `knowledge_scope == "category_detail"` 조건을 먼저 확인해 영주(common_only NPC)에게는 지시가 붙지 않도록 합니다.
+
+### RuntimeError만 catch → NPC fallback 반환
+router, search, persona 오류는 로직 버그이므로 상위로 전파합니다. LLM 재시도 전부 실패(RuntimeError)만 잡아 npcs.json의 `fallback_response`를 반환합니다. 이렇게 하면 예상치 못한 오류가 조용히 묻히지 않습니다.
+
+---
+
 ## 테스트 결과 요약
 
 | 단계 | 항목 | 결과 |

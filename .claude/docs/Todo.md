@@ -65,29 +65,29 @@
 
 ---
 
-## 6. LLM 연동 (`src/llm.py`) <- 현재
+## 6. LLM 연동 (`src/llm.py`)
 
-- [ ] Ollama 클라이언트 래퍼 함수 작성
-- [ ] 시스템 프롬프트 + 유저 메시지 → 응답
-- [ ] temperature, max_tokens 등 파라미터 인자화
-- [ ] 호출 실패 시 재시도 로직
+- [x] Ollama 클라이언트 래퍼 함수 작성
+- [x] 시스템 프롬프트 + 유저 메시지 → 응답
+- [x] temperature, max_tokens 등 파라미터 인자화
+- [x] 호출 실패 시 재시도 로직
 
 ---
 
 ## 7. NPC 페르소나 및 프롬프트 (`src/persona.py`)
 
-- [ ] `npcs.json` 로드 함수
-- [ ] 라우트별 시스템 프롬프트 빌더
+- [x] `npcs.json` 로드 함수
+- [x] 라우트별 시스템 프롬프트 빌더
   - chitchat용
   - item_query용
   - npc_query용
   - location_query용
   - jailbreak용
-- [ ] 응답 톤 규칙 프롬프트에 포함
+- [x] 응답 톤 규칙 프롬프트에 포함
   - 약초상이 무기 질문 → 대장장이로 유도
   - 대장장이가 약초 질문 → 약초상으로 유도
   - 영주는 디테일 모름 명시
-- [ ] 상황별 추가 프롬프트 함수
+- [x] 상황별 추가 프롬프트 함수
   - 검색 결과 없음 → "모른다고 답하라" 지시 추가
   - 권한 밖 카테고리(common만) → "전문가에게 유도하라" 지시 추가
 
@@ -95,17 +95,17 @@
 
 ## 8. 챗봇 메인 로직 (`src/chatbot.py`)
 
-- [ ] 메인 chat 함수 작성
+- [x] 메인 chat 함수 작성
   - 입력 → router 호출 → 라우트 변수 결정
-- [ ] 라우트별 분기 처리
+- [x] 라우트별 분기 처리
   - chitchat → chitchat 프롬프트 + LLM
-  - jailbreak → jailbreak 프롬프트 + LLM
+  - jailbreak → jailbreak 고정 응답 반환 (LLM 미사용)
   - item/npc/location_query → search 호출 → 권한 필터링 → 상황별 추가 프롬프트 결합 → LLM
-- [ ] LLM 에러 시 재시도 → 실패하면 최후 수단 고정 응답 반환
+- [x] LLM 에러 시 재시도 → 실패하면 최후 수단 고정 응답 반환
 
 ---
 
-## 9. API 서버 (`src/server.py`)
+## 9. API 서버 (`src/server.py`) <- 현재
 
 - [ ] FastAPI 앱 초기화
 - [ ] POST `/chat` 엔드포인트 (`{npc, message}` → `{response}`)
