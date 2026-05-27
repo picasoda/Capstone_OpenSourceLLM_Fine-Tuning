@@ -126,6 +126,19 @@ router, search, persona 오류는 로직 버그이므로 상위로 전파합니�
 
 ---
 
+## 9단계 — server.py (FastAPI 서버)
+
+### 유니티 ID → 한글 이름 매핑
+유니티 ScriptableObject의 NPC ID(`npc_arthur`, `npc_martha`, `npc_sten`, `npc_jasper`)가 내부 한글 이름과 다릅니다. server.py의 `NPC_ID_MAP` 딕셔너리에서 변환하므로 chatbot.py 이하 레이어는 한글 이름만 사용합니다. JSON id 형식(`npc_lord` 등)도 호환 허용합니다.
+
+### Pydantic field_validator로 NPC 검증
+허용되지 않은 NPC ID는 422 Unprocessable Entity를 반환합니다. FastAPI의 Pydantic 통합을 그대로 활용해 별도 if문 없이 검증합니다.
+
+### 상인(jasper) 추가
+유니티에 npc_jasper(예스퍼 상인)가 존재하나 기존 시스템에 없었습니다. `common_only` 권한으로 npcs.json에 추가했습니다. 전문 정보는 모르고 전문가에게 유도하는 역할입니다.
+
+---
+
 ## 테스트 결과 요약
 
 | 단계 | 항목 | 결과 |

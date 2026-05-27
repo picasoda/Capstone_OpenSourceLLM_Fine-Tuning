@@ -107,7 +107,7 @@
 
 ## 9. API 서버 (`src/server.py`) <- 현재
 
-- [ ] FastAPI 앱 초기화
-- [ ] POST `/chat` 엔드포인트 (`{npc, message}` → `{response}`)
-- [ ] GET `/health` 엔드포인트
-- [ ] uvicorn 실행 (`0.0.0.0:8000`)
+- [x] FastAPI 앱 초기화
+- [x] POST `/chat` 엔드포인트 (`{npc, message}` → `{response}`)
+- [x] GET `/health` 엔드포인트
+- [x] uvicorn 실행 (`0.0.0.0:8000`)
