@@ -1,8 +1,10 @@
-import sys
+import json
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(__file__))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, field_validator
 import uvicorn
 
@@ -10,18 +12,13 @@ from chatbot import chat
 
 app = FastAPI()
 
-NPC_ID_MAP = {
-    "npc_arthur":    "영주",
-    "npc_martha":    "약초상",
-    "npc_sten":      "대장장이",
-    "npc_jasper":    "상인",
-    # JSON id 형식도 허용
-    "npc_lord":        "영주",
-    "npc_herbalist":   "약초상",
-    "npc_blacksmith":  "대장장이",
-}
+_NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
 
-ALLOWED_NPC_IDS = set(NPC_ID_MAP.keys())
+with open(_NPC_DATA_PATH, encoding="utf-8") as _f:
+    _npcs = json.load(_f)
+
+NPC_ID_MAP: dict[str, str] = {npc["id"]: npc["name"] for npc in _npcs}
+ALLOWED_NPC_IDS: set[str] = set(NPC_ID_MAP.keys())
 
 
 class ChatRequest(BaseModel):

@@ -12,8 +12,12 @@ from embedder import get_embedder
 DB_DIR = os.path.join(os.path.dirname(__file__), "..", "db")
 NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
 
-TOP_K = 3
-SEARCH_THRESHOLD = 0.4
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "config.json")
+with open(_CONFIG_PATH, encoding="utf-8") as _f:
+    _search_cfg = json.load(_f)["search"]
+
+TOP_K: int = _search_cfg["top_k"]
+SEARCH_THRESHOLD: float = _search_cfg["threshold"]
 
 _client: chromadb.Client | None = None
 

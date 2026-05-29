@@ -19,7 +19,7 @@ globs: Chatbot/src/{ingest,search}.py
 
 ### search.py — 검색
 - 검색 함수: `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)`
-- 상수: `TOP_K = 3`, `SEARCH_THRESHOLD = 0.4`
+- 상수: `TOP_K`, `SEARCH_THRESHOLD`는 `data/config.json`의 `search` 섹션에서 로드
 - `SEARCH_THRESHOLD` 미달 결과는 반환 목록에서 제외
 - 검색 결과 0개이면 "정보 없음" 신호 반환 (빈 리스트 또는 명시적 플래그)
 

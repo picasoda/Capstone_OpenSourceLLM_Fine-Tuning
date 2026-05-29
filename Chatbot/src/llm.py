@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import json
+import os
 import time
 
 import ollama
 
-MODEL = "qwen3.5:9b"
-MAX_RETRIES = 3
-RETRY_DELAY = 1.0
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "config.json")
+with open(_CONFIG_PATH, encoding="utf-8") as _f:
+    _cfg = json.load(_f)["llm"]
+
+MODEL: str = _cfg["model"]
+MAX_RETRIES: int = _cfg["max_retries"]
+RETRY_DELAY: float = _cfg["retry_delay"]
 
 
 def generate(

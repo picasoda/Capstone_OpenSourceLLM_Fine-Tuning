@@ -10,32 +10,29 @@
   - common: 일반인이 알 만한 정보 (외형 설명, 대략적 용도, 일반 획득처)
   - detail: 전문가만 아는 정보 (제작 레시피, 정확한 수치, 부작용 등)
 - 규모: 30~50개
-- *정보필요*: 실제 아이템 항목 데이터
 
 ### 1.2 NPC 데이터
 - 파일: `data/npcs.json`
-- 등장 NPC: 영주, 약초상, 대장장이 (3명)
-- 필드: 이름, 성격, 말투, 배경
+- 등장 NPC: 영주(아서), 약초상(마사), 대장장이(스텐), 상인(예스퍼) (4명)
+- 필드: id, name, job, personality, tone, background, knowledge_scope, detail_categories, tone_rule, fallback_response, jailbreak_response
 - 권한 필드
   - knowledge_scope: 컬렉션별 접근 수준 (`common_only` / `category_detail`)
   - detail_categories: 상세 정보 접근 가능한 아이템 카테고리 목록
 - NPC별 권한
-  - 영주: 모든 컬렉션 접근 가능, 단 전부 common_only
+  - 영주: 모든 컬렉션 common_only
   - 약초상: items는 category_detail (herb, potion만 상세), 나머지는 common_only
   - 대장장이: items는 category_detail (weapon, armor만 상세), 나머지는 common_only
-- *정보필요*: NPC별 성격, 말투, 배경 세부 내용
+  - 상인: 모든 컬렉션 common_only
 
 ### 1.3 장소 데이터
 - 파일: `data/locations.json`
 - 구조: common / detail 분리
 - 규모: 10~15개
-- *정보필요*: 실제 장소 항목 데이터, common/detail 분리 기준
 
 ### 1.4 세계관 데이터
 - 파일: `data/worldlore.json`
 - 구조: common 정보 위주
 - 규모: 5~10개
-- *정보필요*: 실제 세계관 항목 데이터
 
 ---
 
@@ -69,7 +66,7 @@
 
 ### 3.4 라우트별 예시 문장
 - 라우트당 10~15개 등록 (chitchat 제외)
-- *정보필요*: item_query, npc_query, location_query, jailbreak 각각의 예시 문장
+- `data/routes.json`에서 startup 시 로드 (코드 하드코딩 금지)
 
 ---
 
@@ -99,7 +96,7 @@
 ## Feature 5. LLM 연동
 
 ### 5.1 Ollama 클라이언트
-- 모델: `qwen3.5:9b`
+- 모델: `qwen3.5:4b` (`data/config.json`의 `llm.model`로 관리)
 - 시스템 프롬프트 + 유저 메시지 전달 후 응답 수신
 - temperature, max_tokens 등 파라미터 조정 가능
 
@@ -114,8 +111,7 @@
   - item_query: 아이템 정보 응답용
   - npc_query: 다른 NPC 정보 응답용
   - location_query: 장소 정보 응답용
-- jailbreak는 LLM 미사용 (고정 응답)
-- *정보필요*: 각 라우트별 프롬프트 본문
+- jailbreak는 LLM 미사용 (`npcs.json`의 `jailbreak_response` 필드 반환)
 
 ### 6.2 응답 톤 규칙 (프롬프트에 포함)
 - 데이터 레벨 필터링으로 common만 받은 경우, 디테일은 모른다고 답하거나 전문가에게 유도하도록 지시
@@ -144,12 +140,53 @@
 
 ---
 
-## Feature 8. API 서버(8.2주소 부분 수정예정)
+## Feature 8. API 서버
 
 ### 8.1 엔드포인트
 - POST `/chat`: 입력 `{npc, message}` → 출력 `{response}`
-- GET `/health`: 서버 상태 확인
+- GET `/health`: 서버 상태 확인 → `{"status": "ok"}`
 
 ### 8.2 실행
 - FastAPI + uvicorn
 - 호스트 `0.0.0.0`, 포트 `8000`
+- 외부 노출: ngrok static domain (`ngrok http --domain=bullring-reactive-ensure.ngrok-free.dev 8000`)
+
+### 8.3 유니티 연동 데이터 명세
+
+#### 요청 (Unity → Server)
+- URL: `POST https://bullring-reactive-ensure.ngrok-free.dev/chat`
+- Content-Type: `application/json`
+
+```json
+{
+  "npc": "npc_arthur",
+  "message": "안녕하세요"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `npc` | string | ✅ | 아래 NPC ID 중 하나 |
+| `message` | string | ✅ | 플레이어 입력 텍스트 |
+
+**허용 NPC ID:**
+
+| ID | NPC |
+|----|-----|
+| `npc_arthur` | 영주 아서 |
+| `npc_martha` | 약초상 마사 |
+| `npc_sten` | 대장장이 스텐 |
+| `npc_jasper` | 상인 예스퍼 |
+
+- 허용되지 않은 ID 전송 시 **422** 반환
+
+#### 응답 (Server → Unity)
+```json
+{
+  "response": "NPC 응답 텍스트"
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `response` | string | NPC 말투로 생성된 응답 텍스트 |

@@ -18,11 +18,12 @@ globs: Chatbot/src/router.py
 - `jailbreak` 예시: 시스템 조작 시도, 현대 기술·AI 언급 등 시대 부적합 발언
 
 ### 임계값 및 Fallback
-- `ROUTER_THRESHOLD = 0.4` 상수로 정의
+- `ROUTER_THRESHOLD`, `_SOFTMAX_TEMPERATURE`는 `data/config.json`의 `router` 섹션에서 로드
 - 가장 유사한 라우트 점수가 임계값 미달이면 `chitchat` 반환
 - 정보 질문 라우트가 감지되면 chitchat보다 우선 라우팅
 
 ### 인터페이스
 - 공용 임베딩 모델(`embedder.py`) import하여 사용 (독자 로드 금지)
+- 예시 문장은 `data/routes.json`에서 startup 시 로드 (코드에 하드코딩 금지)
 - 반환값: 라우트 이름 문자열 (`item_query` / `npc_query` / `location_query` / `jailbreak` / `chitchat`)
 - 라우트 분류 외 다른 책임 갖지 않음

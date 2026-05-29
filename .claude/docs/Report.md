@@ -7,16 +7,15 @@
 ## 1단계 — 환경 구성
 
 ### 실제 사용 Python 환경
-`conda activate llm_env`로 진입하면 Python 3.10처럼 보이지만, 실제 패키지가 설치된 환경은 `/volume/Capstone_OpenSourceLLM_Fine-Tuning/llm_env` (Python 3.13 venv)입니다.
+프로젝트 루트의 `llm_env\` 로컬 venv를 사용합니다 (Python 3.12.4).
 
-`conda run -n llm_env pip`가 venv의 pip를 호출하는 PATH 충돌 상태입니다. 이후 모든 스크립트는 아래 인터프리터를 명시적으로 사용해야 합니다.
-
+활성화:
 ```
-/volume/Capstone_OpenSourceLLM_Fine-Tuning/llm_env/bin/python
+llm_env\Scripts\activate.bat
 ```
 
 ### HF_HOME 설정
-모델 다운로드 경로를 볼륨으로 고정하지 않으면 컨테이너 재시작 시 캐시가 초기화됩니다. `.env`의 `HF_HOME` 값을 스크립트 실행 전 환경변수로 주입해야 합니다.
+`Chatbot/.env`에 `HF_HOME=C:\Users\wormq\.cache\huggingface`로 정의됩니다. `embedder.py` import 시 `load_dotenv()`로 자동 로드되므로 별도 주입 불필요합니다.
 
 ---
 
@@ -126,6 +125,31 @@ router, search, persona 오류는 로직 버그이므로 상위로 전파합니�
 
 ---
 
+## Todo 외 리팩터링 — JSON 분리 (2026-05-30)
+
+### 하드코딩 데이터를 JSON으로 분리한 이유
+코드 수정 없이 예시 문장·NPC 응답·설정값을 변경할 수 있도록, 파이썬 파일에 인라인으로 박혀 있던 데이터를 data/ 폴더 JSON 파일로 분리했습니다.
+
+### routes.json 분리 (router.py → data/routes.json)
+라우터 예시 문장 ~50개가 router.py에 하드코딩되어 있었습니다. 예시 추가·수정이 코드 파일 직접 편집을 요구했으므로, `data/routes.json`으로 분리하고 router.py는 startup 시 로드합니다.
+
+### config.json 통합 (llm.py, router.py, search.py → data/config.json)
+`MODEL`, `MAX_RETRIES`, `ROUTER_THRESHOLD`, `TOP_K` 등 튜닝 상수가 각 모듈에 분산되어 있었습니다. `data/config.json` 단일 파일로 통합해 모델 교체·임계값 조정 시 JSON 하나만 수정하면 됩니다.
+
+### jailbreak_response, tone_rule 필드를 npcs.json으로 이동
+`persona.py`의 `_JAILBREAK_RESPONSES` 딕셔너리와 `_tone_rules()` 함수 내 NPC별 분기 텍스트를 npcs.json의 각 NPC 객체 필드(`jailbreak_response`, `tone_rule`)로 이동했습니다. NPC가 추가될 때 persona.py 코드를 수정할 필요가 없어졌습니다.
+
+### NPC_ID_MAP 동적 빌드 (server.py)
+`NPC_ID_MAP`이 server.py에 하드코딩되어 npcs.json의 `id` 필드와 중복이었습니다. 서버 기동 시 npcs.json을 읽어 `{npc["id"]: npc["name"]}` 딕셔너리를 동적으로 구성하도록 변경했습니다. NPC 추가 시 server.py 수정 불필요.
+
+### _base_prompt full_name 버그 수정 (persona.py)
+`_base_prompt`가 존재하지 않는 `npc['full_name']` 필드를 참조하는 버그가 있었습니다. `npc['name'](npc['job'])` 형식(`아서(영주)`)으로 수정했습니다.
+
+### 모델 변경 (qwen3.5:9b → qwen3.5:1.7b)
+경량 모델로 교체. config.json에서 관리하므로 이후 변경은 JSON 수정으로 충분합니다.
+
+---
+
 ## 9단계 — server.py (FastAPI 서버)
 
 ### 유니티 ID → 한글 이름 매핑
@@ -138,14 +162,3 @@ router, search, persona 오류는 로직 버그이므로 상위로 전파합니�
 유니티에 npc_jasper(예스퍼 상인)가 존재하나 기존 시스템에 없었습니다. `common_only` 권한으로 npcs.json에 추가했습니다. 전문 정보는 모르고 전문가에게 유도하는 역할입니다.
 
 ---
-
-## 테스트 결과 요약
-
-| 단계 | 항목 | 결과 |
-|------|------|------|
-| 환경 | 패키지 설치 확인 | chromadb 1.5.9 / sentence-transformers 5.5.1 / semantic-router 0.1.2 / fastapi 0.136.1 |
-| 환경 | Ollama qwen3.5:9b | 정상 실행 중 |
-| 3단계 | bge-m3 로드 | 정상 (인터넷 접근으로 최초 다운로드) |
-| 4단계 | 라우팅 14개 케이스 | 14/14 통과 |
-| 5단계 | 색인 | items 39 / npcs 3 / locations 12 / lore 8 |
-| 5단계 | 권한 필터링 | 약초상+herb→full / 영주+weapon→common_only / 대장장이+herb→common_only (불일치) / 임계값 미달→0개 모두 정상 |

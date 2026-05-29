@@ -1,0 +1,17 @@
+{
+  "llm": {
+    "model": "qwen3.5:4b",
+    "max_retries": 3,
+    "retry_delay": 1.0,
+    "default_temperature": 0.7,
+    "default_max_tokens": 512
+  },
+  "router": {
+    "threshold": 0.4,
+    "softmax_temperature": 0.1
+  },
+  "search": {
+    "top_k": 3,
+    "threshold": 0.4
+  }
+}

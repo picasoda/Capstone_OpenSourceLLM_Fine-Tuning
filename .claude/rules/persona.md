@@ -9,6 +9,10 @@ globs: Chatbot/src/persona.py
 
 ## Rules
 
+### NPC 조회
+- `get_npc(name)` — `npc["name"]`(아서, 마사 등) 또는 `npc["job"]`(영주, 약초상 등) 양쪽으로 조회 가능
+- 내부 캐시는 `{name: npc, job: npc}` 양방향으로 빌드
+
 ### 프롬프트 빌더
 - `npcs.json`에서 NPC 데이터(이름, 성격, 말투, 배경)를 로드하여 베이스 프롬프트 생성
 - 라우트별 시스템 프롬프트 빌더 함수 제공
@@ -16,9 +20,11 @@ globs: Chatbot/src/persona.py
   - `build_item_query_prompt(npc, context)`
   - `build_npc_query_prompt(npc, context)`
   - `build_location_query_prompt(npc, context)`
-  - `build_jailbreak_prompt(npc)` — LLM 미사용, 고정 응답 반환
+  - `build_jailbreak_prompt(npc)` — LLM 미사용, `npcs.json`의 `jailbreak_response` 필드 반환
 
 ### 응답 톤 규칙 (프롬프트에 포함)
+- NPC별 유도 지시 텍스트는 `npcs.json`의 `tone_rule` 필드에서 읽음 (코드 분기 금지)
+- `_tone_rules(npc)` → `npc.get("tone_rule", "")` 반환으로 단순화
 - 약초상이 무기(weapon/armor) 질문 받을 때 → common만 답하고 대장장이에게 유도
 - 대장장이가 약초(herb/potion) 질문 받을 때 → common만 답하고 약초상에게 유도
 - 영주는 모든 질문에 detail 모른다고 명시

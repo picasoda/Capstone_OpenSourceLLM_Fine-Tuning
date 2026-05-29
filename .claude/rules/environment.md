@@ -1,49 +1,48 @@
 ## Python 환경
 
-### 실제 사용 인터프리터
+### 가상환경 위치
 ```
-/volume/Capstone_OpenSourceLLM_Fine-Tuning/llm_env/bin/python3   # Python 3.13.13
+Capstone_OpenSourceLLM_Fine-Tuning/llm_env/   # 프로젝트 루트 내 venv
 ```
-- PATH 최우선이므로 `python3` 명령 = 이 인터프리터
-- 모든 패키지(chromadb, sentence-transformers, fastapi 등)가 여기에 설치됨
-- **스크립트 실행 시 별도 conda activate 불필요**, 그냥 `python3` 사용
 
-### 절대 사용 금지
+### 활성화 방법 (PowerShell)
+```powershell
+# 프로젝트 루트에서
+llm_env\Scripts\Activate.ps1
 ```
-/root/miniconda/envs/llm_env/bin/python   # Python 3.10, 패키지 전무
-conda run -n llm_env python ...           # 위와 동일한 빈 환경 호출
-```
-- 이름이 `llm_env`로 같아 혼동 발생
-- 패키지가 하나도 없어 import 오류 발생
+
+- 모든 패키지(chromadb, sentence-transformers, fastapi 등)가 이 venv에 설치됨
+- 스크립트 실행 전 반드시 활성화 필요
 
 ---
 
 ## 환경변수
 
 ### HF_HOME (HuggingFace 캐시 경로)
-- `Chatbot/.env`에 정의: `HF_HOME=/volume/Capstone_OpenSourceLLM_Fine-Tuning/hf_cache`
+- `Chatbot/.env`에 정의: `HF_HOME=C:\Users\wormq\.cache\huggingface`
 - `embedder.py`가 import될 때 `load_dotenv()`로 자동 로드됨
-- **셸에서 직접 실행할 때도 prefix 불필요** (embedder import 시 자동 처리)
-- bge-m3 캐시 위치: `hf_cache/hub/models--BAAI--bge-m3`
+- bge-m3 캐시 위치: `C:\Users\wormq\.cache\huggingface\hub\models--BAAI--bge-m3`
 
 ### OLLAMA_MODELS
-- `Chatbot/.env`에 정의: `/volume/Capstone_OpenSourceLLM_Fine-Tuning/ollama_models`
-- Ollama는 서비스로 실행 중 (`ollama list`로 확인)
-- 현재 모델: `qwen3.5:9b` (6.6GB)
+- Ollama는 로컬에서 실행 중 (`ollama list`로 확인)
+- 현재 모델: `qwen3.5:4b`
 
 ---
 
 ## 스크립트 실행 방법
 
-```bash
-# Chatbot/ 디렉터리에서 실행 (상대경로 기준점)
-cd /volume/Capstone_OpenSourceLLM_Fine-Tuning/Chatbot
+```powershell
+# 프로젝트 루트에서 가상환경 활성화
+llm_env\Scripts\Activate.ps1
+
+# Chatbot/ 디렉터리로 이동 (상대경로 기준점)
+cd Chatbot
 
 # 색인 (1회)
-python3 src/ingest.py
+python src/ingest.py
 
-# 서버 실행 (6단계 이후)
-python3 src/server.py
+# 서버 실행
+python src/server.py
 ```
 
 **주의**: `src/` 안의 스크립트는 `sys.path.insert(0, os.path.dirname(__file__))`로  
@@ -63,19 +62,10 @@ python3 src/server.py
 | fastapi | 0.136.1 |
 | uvicorn | 0.47.0 |
 | python-dotenv | (설치됨) |
-| torch | 2.12.0+cu130 |
-| numpy | 2.4.6 |
 
 ---
 
 ## 알려진 경고 (무시 가능)
-
-```
-UserWarning: CUDA initialization: The NVIDIA driver on your system is too old
-```
-- GPU 드라이버(12090)가 PyTorch 요구 버전보다 낮음
-- CPU로 fallback되어 동작에는 문제없음
-- bge-m3 인코딩은 CPU로 정상 실행됨
 
 ```
 Warning: You are sending unauthenticated requests to the HF Hub.

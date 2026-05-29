@@ -21,4 +21,5 @@ globs: Chatbot/src/server.py
 - 엔드포인트 핸들러는 `chatbot.py`의 `chat()` 함수를 호출하는 얇은 래퍼로 유지
 - 입력 검증은 Pydantic 모델로 처리
 - 서버 로직(비즈니스 로직)을 이 파일에 직접 구현하지 않음
-- `npc` 값이 허용된 NPC 이름(영주, 약초상, 대장장이)이 아닌 경우 422 응답 반환
+- `NPC_ID_MAP`은 서버 기동 시 `data/npcs.json`에서 동적 빌드 (`{npc["id"]: npc["name"]}`)
+- `npc` 값이 npcs.json에 없는 ID인 경우 422 응답 반환
