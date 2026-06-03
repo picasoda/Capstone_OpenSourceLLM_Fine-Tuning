@@ -12,10 +12,15 @@ globs: Chatbot/src/server.py
 - `POST /chat`: 요청 `{npc: str, message: str}` → 응답 `{response: str}`
 - `GET /health`: 서버 상태 확인, `{"status": "ok"}` 반환
 
+### CORS
+- `CORSMiddleware` 적용: `allow_origins=["*"]`, `allow_methods=["GET", "POST"]`, `allow_headers=["Content-Type"]`
+- Unity WebGL 및 ngrok URL 포함 모든 출처 허용
+
 ### 실행 설정
 - 호스트: `0.0.0.0`
 - 포트: `8000`
 - 실행: `uvicorn` 사용
+- 외부 노출: `ngrok http 8000` (실행 순서는 프로젝트 루트 `ollama.txt` 참조)
 
 ### 공통
 - 엔드포인트 핸들러는 `chatbot.py`의 `chat()` 함수를 호출하는 얇은 래퍼로 유지

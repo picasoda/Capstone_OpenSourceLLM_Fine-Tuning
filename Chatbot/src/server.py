@@ -5,12 +5,20 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 import uvicorn
 
 from chatbot import chat
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type"],
+)
 
 _NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
 

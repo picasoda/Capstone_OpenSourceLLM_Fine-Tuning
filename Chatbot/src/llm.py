@@ -13,13 +13,15 @@ with open(_CONFIG_PATH, encoding="utf-8") as _f:
 MODEL: str = _cfg["model"]
 MAX_RETRIES: int = _cfg["max_retries"]
 RETRY_DELAY: float = _cfg["retry_delay"]
+DEFAULT_TEMPERATURE: float = _cfg["default_temperature"]
+DEFAULT_MAX_TOKENS: int = _cfg["default_max_tokens"]
 
 
 def generate(
     system_prompt: str,
     user_message: str,
-    temperature: float = 0.7,
-    max_tokens: int = 512,
+    temperature: float = DEFAULT_TEMPERATURE,
+    max_tokens: int = DEFAULT_MAX_TOKENS,
 ) -> str:
     last_error: Exception | None = None
     for attempt in range(MAX_RETRIES):

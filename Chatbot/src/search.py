@@ -33,7 +33,7 @@ def _load_npc(npc_name: str) -> dict:
     with open(NPC_DATA_PATH, encoding="utf-8") as f:
         npcs = json.load(f)
     for npc in npcs:
-        if npc["name"] == npc_name:
+        if npc["name"] == npc_name or npc["job"] == npc_name:
             return npc
     raise ValueError(f"NPC '{npc_name}' not found")
 

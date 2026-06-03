@@ -162,3 +162,16 @@ router, search, persona 오류는 로직 버그이므로 상위로 전파합니�
 유니티에 npc_jasper(예스퍼 상인)가 존재하나 기존 시스템에 없었습니다. `common_only` 권한으로 npcs.json에 추가했습니다. 전문 정보는 모르고 전문가에게 유도하는 역할입니다.
 
 ---
+
+## Todo 외 작업 — Unity 외부 통신 환경 구성
+
+### CORS 미들웨어 추가 (server.py)
+Unity WebGL 빌드는 브라우저 컨텍스트에서 실행되어 CORS 정책이 적용됩니다. `allow_origins=["*"]`로 설정해 ngrok URL 포함 모든 출처를 허용했습니다. 스탠드얼론(Windows/Android 등)은 CORS 불필요이나 미리 적용해 WebGL 대응을 마쳤습니다.
+
+### ngrok 선택 이유
+로컬 FastAPI 서버(port 8000)를 Unity에서 접근하려면 공개 URL이 필요합니다. ngrok은 별도 서버 없이 터널링만으로 HTTPS 외부 URL을 제공하므로 개발 단계에서 가장 빠른 선택입니다. 무료 플랜은 재시작마다 URL이 바뀌므로 고정이 필요하면 ngrok static domain 또는 클라우드 배포로 전환이 필요합니다.
+
+### 실행 순서 문서
+`ollama.txt` (프로젝트 루트) — Ollama → FastAPI → ngrok → Unity 호출 순서 및 C# 예시 포함.
+
+---
