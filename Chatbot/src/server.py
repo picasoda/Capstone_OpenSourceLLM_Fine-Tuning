@@ -4,14 +4,24 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 import uvicorn
 
 from chatbot import chat
+from embedder import get_embedder
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    get_embedder()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
