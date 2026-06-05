@@ -17,9 +17,9 @@ globs: Chatbot/src/chatbot.py
 ### 라우트별 분기
 - `["chitchat"]`: chitchat 프롬프트 + LLM 호출
 - `["jailbreak"]`: jailbreak 고정 응답 반환 (LLM 미사용)
-- 정보 라우트 1개 이상 (`item_query` / `npc_query` / `location_query` 조합):
+- 정보 라우트 1개 이상 (`item_query` / `npc_query` / `location_query` / `lore_query` 조합):
   1. 각 라우트마다 해당 search 함수 호출
-  2. 결과를 `contexts` 딕셔너리로 합산 (`{"item": "...", "npc": "...", "location": "..."}`)
+  2. 결과를 `contexts` 딕셔너리로 합산 (`{"item": "...", "npc": "...", "location": "...", "lore": "..."}`)
   3. `build_combined_query_prompt(npc_name, contexts)` 호출
   4. 상황별 추가 프롬프트 결합 (`no_result` 또는 `permission_gap` 조건 확인)
   5. LLM 호출

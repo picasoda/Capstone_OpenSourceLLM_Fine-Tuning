@@ -18,10 +18,11 @@ globs: Chatbot/src/{ingest,search}.py
 - 색인 스크립트는 1회 실행용 (멱등성 보장)
 
 ### search.py — 검색
-- 검색 함수: `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)`
+- 검색 함수: `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)`, `search_lore(query, npc)`
 - 상수: `TOP_K`, `SEARCH_THRESHOLD`는 `data/config.json`의 `search` 섹션에서 로드
 - `SEARCH_THRESHOLD` 미달 결과는 반환 목록에서 제외
 - 검색 결과 0개이면 "정보 없음" 신호 반환 (빈 리스트 또는 명시적 플래그)
+- `search_lore`: NPC 권한 구분 없이 항상 `common` 필드만 반환 (worldlore는 detail 없음)
 
 ### 권한 필터링 (`filter_by_permission`)
 - NPC의 `knowledge_scope`에 따라 반환 필드 결정

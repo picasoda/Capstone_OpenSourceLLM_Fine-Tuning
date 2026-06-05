@@ -18,7 +18,7 @@ globs: Chatbot/src/persona.py
 - 빌더 함수 목록
   - `build_chitchat_prompt(npc_name)` — 잡담용
   - `build_combined_query_prompt(npc_name, contexts: dict)` — 단일/복합 정보 쿼리 통합 빌더
-    - `contexts = {"item": "...", "npc": "...", "location": "..."}` 형태, 비어있는 섹션 제외
+    - `contexts = {"item": "...", "npc": "...", "location": "...", "lore": "..."}` 형태, 비어있는 섹션 제외
   - `build_jailbreak_prompt(npc_name)` — LLM 미사용, `npcs.json`의 `jailbreak_response` 필드 반환
 
 ### 응답 톤 규칙 (프롬프트에 포함)

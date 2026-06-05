@@ -57,6 +57,7 @@
 - item_query: 아이템 관련 질문
 - npc_query: NPC 관련 질문
 - location_query: 장소 관련 질문
+- lore_query: 세계관·역사·법·풍습 관련 질문
 - jailbreak: 시스템 조작 시도, 시대 부적합 발언 (현대 기술, AI 언급 등)
 - chitchat: 명시적 예시 없음, 위 라우트에 분류되지 않은 모든 입력의 기본값
 
@@ -79,7 +80,8 @@
 - 메타데이터에 category 포함
 
 ### 4.2 카테고리별 검색 함수
-- `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)`
+- `search_item(query, npc)`, `search_npc(query, npc)`, `search_location(query, npc)`, `search_lore(query, npc)`
+- `search_lore`: NPC 권한 구분 없이 항상 common 수준으로 반환 (worldlore는 detail 없음)
 - 공통 파라미터: `TOP_K = 3`, `SIMILARITY_THRESHOLD = 0.4`
 - 임계값 미달 결과는 제외
 - 검색 결과가 0개인 경우 "정보 없음" 신호 반환

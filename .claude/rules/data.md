@@ -34,7 +34,7 @@ globs: Chatbot/data/*.json
 
 ### routes.json
 - 라우터 예시 문장 정의 파일 (router.py가 startup 시 로드)
-- 최상위 키: `item_query`, `npc_query`, `location_query`, `jailbreak`
+- 최상위 키: `item_query`, `npc_query`, `location_query`, `lore_query`, `jailbreak`
 - 각 키의 값: 예시 문장 배열 (라우트당 10~15개)
 - `chitchat`은 포함하지 않음 (default fallback이므로)
 
