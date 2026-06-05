@@ -131,6 +131,21 @@ def search_npc(query: str, npc: str) -> list[dict]:
     ]
 
 
+def search_lore(query: str, npc: str) -> list[dict]:
+    hits = _query_collection("lore", query)
+    if not hits:
+        return []
+    return [
+        {
+            "name": h["metadata"].get("name", ""),
+            "content": h["metadata"].get("common", ""),
+            "score": h["score"],
+            "permission": "common_only",
+        }
+        for h in hits
+    ]
+
+
 def search_location(query: str, npc: str) -> list[dict]:
     hits = _query_collection("locations", query)
     if not hits:

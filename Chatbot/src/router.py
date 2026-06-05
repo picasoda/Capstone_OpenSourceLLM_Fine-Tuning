@@ -35,7 +35,12 @@ def _build_index() -> None:
     _labels = labels
 
 
-def classify(query: str) -> str:
+def classify(query: str) -> list[str]:
+    """임계값 이상인 모든 라우트를 반환한다.
+
+    - jailbreak 포함 시 즉시 ["jailbreak"] 반환
+    - 임계값 이상 라우트가 없으면 ["chitchat"] 반환
+    """
     global _embeddings, _labels
     if _embeddings is None:
         _build_index()
@@ -60,10 +65,14 @@ def classify(query: str) -> str:
     probs = np.exp(arr - arr.max())
     probs /= probs.sum()
 
-    best_idx = int(np.argmax(probs))
-    best_score = float(probs[best_idx])
+    matched = [
+        route_names[i] for i, p in enumerate(probs) if float(p) >= ROUTER_THRESHOLD
+    ]
 
-    if best_score < ROUTER_THRESHOLD:
-        return "chitchat"
+    if not matched:
+        return ["chitchat"]
 
-    return route_names[best_idx]
+    if "jailbreak" in matched:
+        return ["jailbreak"]
+
+    return matched

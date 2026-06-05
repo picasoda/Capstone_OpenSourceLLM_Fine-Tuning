@@ -22,23 +22,21 @@ def _load_json(filename: str) -> list:
 COSINE_METADATA = {"hnsw:space": "cosine"}
 
 
-def _get_or_create(client: chromadb.Client, name: str):
+def _reset_collection(client: chromadb.Client, name: str):
+    """컬렉션을 삭제 후 새로 생성하여 완전 초기화."""
     try:
-        return client.get_collection(name)
+        client.delete_collection(name)
     except Exception:
-        return client.create_collection(name, metadata=COSINE_METADATA)
+        pass
+    return client.create_collection(name, metadata=COSINE_METADATA)
 
 
 def ingest_items(client: chromadb.Client, embedder) -> None:
-    collection = _get_or_create(client, "items")
-    existing_ids = set(collection.get()["ids"])
-
+    collection = _reset_collection(client, "items")
     items = _load_json("items.json")
     ids, documents, embeddings, metadatas = [], [], [], []
 
     for item in items:
-        if item["id"] in existing_ids:
-            continue
         text = f"{item['common']} {item['detail']}"
         ids.append(item["id"])
         documents.append(text)
@@ -52,21 +50,15 @@ def ingest_items(client: chromadb.Client, embedder) -> None:
 
     if ids:
         collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas)
-        print(f"[ingest] items: {len(ids)}개 추가")
-    else:
-        print("[ingest] items: 이미 색인됨, 건너뜀")
+    print(f"[ingest] items: {len(ids)}개 색인 완료")
 
 
 def ingest_npcs(client: chromadb.Client, embedder) -> None:
-    collection = _get_or_create(client, "npcs")
-    existing_ids = set(collection.get()["ids"])
-
+    collection = _reset_collection(client, "npcs")
     npcs = _load_json("npcs.json")
     ids, documents, embeddings, metadatas = [], [], [], []
 
     for npc in npcs:
-        if npc["id"] in existing_ids:
-            continue
         text = f"{npc['name']} {npc['personality']} {npc['background']}"
         ids.append(npc["id"])
         documents.append(text)
@@ -80,21 +72,15 @@ def ingest_npcs(client: chromadb.Client, embedder) -> None:
 
     if ids:
         collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas)
-        print(f"[ingest] npcs: {len(ids)}개 추가")
-    else:
-        print("[ingest] npcs: 이미 색인됨, 건너뜀")
+    print(f"[ingest] npcs: {len(ids)}개 색인 완료")
 
 
 def ingest_locations(client: chromadb.Client, embedder) -> None:
-    collection = _get_or_create(client, "locations")
-    existing_ids = set(collection.get()["ids"])
-
+    collection = _reset_collection(client, "locations")
     locations = _load_json("locations.json")
     ids, documents, embeddings, metadatas = [], [], [], []
 
     for loc in locations:
-        if loc["id"] in existing_ids:
-            continue
         text = f"{loc['common']} {loc.get('detail', '')}"
         ids.append(loc["id"])
         documents.append(text)
@@ -107,21 +93,15 @@ def ingest_locations(client: chromadb.Client, embedder) -> None:
 
     if ids:
         collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas)
-        print(f"[ingest] locations: {len(ids)}개 추가")
-    else:
-        print("[ingest] locations: 이미 색인됨, 건너뜀")
+    print(f"[ingest] locations: {len(ids)}개 색인 완료")
 
 
 def ingest_lore(client: chromadb.Client, embedder) -> None:
-    collection = _get_or_create(client, "lore")
-    existing_ids = set(collection.get()["ids"])
-
+    collection = _reset_collection(client, "lore")
     lore = _load_json("worldlore.json")
     ids, documents, embeddings, metadatas = [], [], [], []
 
     for entry in lore:
-        if entry["id"] in existing_ids:
-            continue
         text = entry["common"]
         ids.append(entry["id"])
         documents.append(text)
@@ -133,9 +113,7 @@ def ingest_lore(client: chromadb.Client, embedder) -> None:
 
     if ids:
         collection.add(ids=ids, documents=documents, embeddings=embeddings, metadatas=metadatas)
-        print(f"[ingest] lore: {len(ids)}개 추가")
-    else:
-        print("[ingest] lore: 이미 색인됨, 건너뜀")
+    print(f"[ingest] lore: {len(ids)}개 색인 완료")
 
 
 def run_ingest() -> None:

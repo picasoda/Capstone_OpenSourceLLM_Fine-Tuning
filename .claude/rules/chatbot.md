@@ -9,22 +9,24 @@ globs: Chatbot/src/chatbot.py
 ## Rules
 
 ### 파이프라인 순서
-1. `router.py`로 입력 분류 → 라우트 변수 결정
-2. 라우트에 따라 `search.py`(검색·권한 필터링) + `persona.py`(프롬프트 빌드) 호출
-3. `llm.py`로 응답 생성 후 반환
+1. `router.py`로 입력 분류 → 라우트 목록(`list[str]`) 결정
+2. 각 라우트마다 `search.py`(검색·권한 필터링) 호출 → 컨텍스트 합산
+3. `persona.py`로 합산 컨텍스트 기반 프롬프트 빌드
+4. `llm.py`로 응답 생성 후 반환
 
 ### 라우트별 분기
-- `chitchat`: chitchat 프롬프트 + LLM 호출
-- `jailbreak`: jailbreak 고정 응답 반환 (LLM 미사용)
-- `item_query` / `npc_query` / `location_query`:
-  1. 검색 호출
-  2. 권한 필터링
-  3. 상황별 추가 프롬프트 결합 (`no_result` 또는 `permission_out` 조건 확인)
-  4. LLM 호출
+- `["chitchat"]`: chitchat 프롬프트 + LLM 호출
+- `["jailbreak"]`: jailbreak 고정 응답 반환 (LLM 미사용)
+- 정보 라우트 1개 이상 (`item_query` / `npc_query` / `location_query` 조합):
+  1. 각 라우트마다 해당 search 함수 호출
+  2. 결과를 `contexts` 딕셔너리로 합산 (`{"item": "...", "npc": "...", "location": "..."}`)
+  3. `build_combined_query_prompt(npc_name, contexts)` 호출
+  4. 상황별 추가 프롬프트 결합 (`no_result` 또는 `permission_gap` 조건 확인)
+  5. LLM 호출
 
 ### Fallback 처리
-- 검색 결과 없음 또는 임계값 미달: `append_no_result_instruction` 적용 후 LLM 호출
-- 권한 밖 카테고리(common만 반환): `append_permission_instruction` 적용 후 LLM 호출
+- 모든 라우트 검색 결과가 비어있음: `append_no_result_instruction` 적용 후 LLM 호출
+- item_query 결과에 권한 밖 카테고리(common만 반환): `append_permission_instruction` 적용 후 LLM 호출
 - LLM 재시도 전부 실패: npcs.json의 최후 수단 고정 응답 반환
 
 ### 공통

@@ -39,7 +39,14 @@ def _base_prompt(npc: dict) -> str:
 
 
 def _tone_rules(npc: dict) -> str:
+    """말투·문장 길이 규칙 — 모든 라우트에 적용."""
     rule = npc.get("tone_rule", "")
+    return f"\n{rule}" if rule else ""
+
+
+def _item_tone_rules(npc: dict) -> str:
+    """카테고리별 NPC 안내 규칙 — 아이템 관련 쿼리에만 적용."""
+    rule = npc.get("item_tone_rule", "")
     return f"\n{rule}" if rule else ""
 
 
@@ -52,37 +59,35 @@ def build_chitchat_prompt(npc_name: str) -> str:
     )
 
 
-def build_item_query_prompt(npc_name: str, context: str) -> str:
+def build_combined_query_prompt(npc_name: str, contexts: dict[str, str]) -> str:
+    """다중 라우트 검색 결과를 합산한 프롬프트.
+
+    contexts = {"item": "...", "npc": "...", "location": "..."}
+    비어있는 섹션은 포함하지 않는다.
+    """
     npc = get_npc(npc_name)
-    return (
-        _base_prompt(npc)
-        + _tone_rules(npc)
-        + f"\n\n[관련 아이템 정보]\n{context}\n\n"
-        "위 정보를 바탕으로 질문에 답하십시오. "
-        "제공된 정보 범위를 벗어난 내용은 모른다고 하십시오."
-    )
 
+    LABELS = {
+        "item": "관련 아이템 정보",
+        "npc": "관련 NPC 정보",
+        "location": "관련 장소 정보",
+        "lore": "관련 세계관 정보",
+    }
 
-def build_npc_query_prompt(npc_name: str, context: str) -> str:
-    npc = get_npc(npc_name)
-    return (
-        _base_prompt(npc)
-        + _tone_rules(npc)
-        + f"\n\n[관련 NPC 정보]\n{context}\n\n"
-        "위 정보를 바탕으로 질문에 답하십시오. "
-        "제공된 정보 범위를 벗어난 내용은 모른다고 하십시오."
-    )
+    sections = ""
+    has_item = bool(contexts.get("item"))
 
+    for key, label in LABELS.items():
+        content = contexts.get(key, "")
+        if content:
+            sections += f"\n\n[{label}]\n{content}"
 
-def build_location_query_prompt(npc_name: str, context: str) -> str:
-    npc = get_npc(npc_name)
-    return (
-        _base_prompt(npc)
-        + _tone_rules(npc)
-        + f"\n\n[관련 장소 정보]\n{context}\n\n"
-        "위 정보를 바탕으로 질문에 답하십시오. "
-        "제공된 정보 범위를 벗어난 내용은 모른다고 하십시오."
-    )
+    prompt = _base_prompt(npc) + _tone_rules(npc)
+    if has_item:
+        prompt += _item_tone_rules(npc)
+    prompt += sections
+    prompt += "\n\n위 정보를 바탕으로 질문에 답하십시오. 제공된 정보 범위를 벗어난 내용은 모른다고 하십시오."
+    return prompt
 
 
 def build_jailbreak_prompt(npc_name: str) -> str:

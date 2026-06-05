@@ -15,14 +15,14 @@ globs: Chatbot/data/*.json
 
 ### items.json
 - 최상위 키: `id`, `name`, `category`, `common`, `detail`
-- `category` 허용값: `herb`, `potion`, `weapon`, `armor`
+- `category` 허용값: `herb`, `potion`, `weapon`, `armor`, `food`, `decoration`, `ore`, `fish`, `junk`, `mushroom`, `crystal`, `elixir`, `material`
 - `common`: 일반인 수준 정보 (외형, 대략적 용도, 일반 획득처)
 - `detail`: 전문가 전용 정보 (제작 레시피, 정확한 수치, 부작용)
 - 항목 수: 30~50개
 
 ### npcs.json
 - 등장 NPC: 영주, 약초상, 대장장이, 상인 (총 4명)
-- 필수 필드: `id`, `name`, `job`, `personality`, `tone`, `background`, `knowledge_scope`, `detail_categories`, `tone_rule`, `fallback_response`, `jailbreak_response`
+- 필수 필드: `id`, `name`, `job`, `personality`, `tone`, `background`, `knowledge_scope`, `detail_categories`, `tone_rule`, `item_tone_rule`, `fallback_response`, `jailbreak_response`
 - `knowledge_scope` 허용값: `common_only`, `category_detail`
 - `tone_rule`: NPC별 응답 유도 지시 텍스트 (없으면 빈 문자열 `""`)
 - `jailbreak_response`: jailbreak 감지 시 LLM 없이 반환할 고정 응답

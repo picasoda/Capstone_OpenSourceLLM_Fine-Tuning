@@ -3,7 +3,21 @@
     "allow": [
       "Bash(conda env list)",
       "Bash(ollama list *)",
-      "Bash(ollama ps *)"
+      "Bash(ollama ps *)",
+      "PowerShell(netstat *)",
+      "PowerShell(ollama ps)",
+      "PowerShell(ollama list)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:8000/health\")",
+      "PowerShell(Get-Process *)",
+      "PowerShell(Test-Path *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(conda *)",
+      "PowerShell(where.exe *)",
+      "PowerShell(& \"*\\pip.exe\" list *)",
+      "PowerShell(& \"*\\pip.exe\" show *)",
+      "PowerShell(& \"*\\pip.exe\" freeze *)"
     ]
   }
 }

@@ -53,5 +53,30 @@ def run():
     print(f"\n{SEP}")
     print("테스트 완료")
 
+def run_http():
+    """서버가 실행 중일 때 HTTP 엔드포인트로 테스트."""
+    import urllib.request, json
+
+    def ask(npc, msg):
+        data = json.dumps({"npc": npc, "message": msg}).encode("utf-8")
+        req = urllib.request.Request(
+            "http://localhost:8000/chat", data=data,
+            headers={"Content-Type": "application/json"}
+        )
+        res = urllib.request.urlopen(req)
+        result = json.loads(res.read().decode("utf-8"))
+        print(f"[{npc}] Q: {msg}")
+        print(f"A: {result['response']}")
+        print()
+
+    ask("npc_martha", "활력 포션이 뭐야?")
+    ask("npc_sten", "마사는 어디 있고 철 주괴는 어떻게 만들어?")
+    ask("npc_arthur", "안녕하세요")
+
+
 if __name__ == "__main__":
-    run()
+    import sys
+    if "--http" in sys.argv:
+        run_http()
+    else:
+        run()

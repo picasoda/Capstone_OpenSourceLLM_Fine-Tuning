@@ -11,13 +11,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, field_validator
 import uvicorn
 
+import ollama
+
 from chatbot import chat
 from embedder import get_embedder
+from llm import MODEL
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     get_embedder()
+    try:
+        ollama.chat(
+            model=MODEL,
+            messages=[{"role": "user", "content": "."}],
+            options={"num_predict": 1},
+            think=False,
+        )
+    except Exception:
+        pass
     yield
 
 
