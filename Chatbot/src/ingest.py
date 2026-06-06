@@ -55,19 +55,17 @@ def ingest_items(client: chromadb.Client, embedder) -> None:
 
 def ingest_npcs(client: chromadb.Client, embedder) -> None:
     collection = _reset_collection(client, "npcs")
-    npcs = _load_json("npcs.json")
+    npcs = _load_json("content/npcs.json")
     ids, documents, embeddings, metadatas = [], [], [], []
 
     for npc in npcs:
-        text = f"{npc['name']} {npc['personality']} {npc['background']}"
+        text = f"{npc['name']} {npc['common']}"
         ids.append(npc["id"])
         documents.append(text)
         embeddings.append(embedder.encode(text).tolist())
         metadatas.append({
             "name": npc["name"],
-            "personality": npc["personality"],
-            "tone": npc["tone"],
-            "background": npc["background"],
+            "common": npc["common"],
         })
 
     if ids:

@@ -26,8 +26,12 @@ globs: Chatbot/src/chatbot.py
 
 ### Fallback 처리
 - 모든 라우트 검색 결과가 비어있음: `append_no_result_instruction` 적용 후 LLM 호출
-- item_query 결과에 권한 밖 카테고리(common만 반환): `append_permission_instruction` 적용 후 LLM 호출
-- LLM 재시도 전부 실패: npcs.json의 최후 수단 고정 응답 반환
+- item_query 결과에 권한 밖 카테고리(common만 반환): `_get_redirect_expert()`로 담당 NPC 결정 후 `append_permission_instruction(prompt, expert)` 적용
+- LLM 재시도 전부 실패: `npcPrompt.json`의 `fallback_response` 반환
+
+### 카테고리-전문가 매핑 (`_CATEGORY_EXPERTS`)
+- 시작 시 `npcPrompt.json`의 `detail_categories`를 역방향 빌드 (`{category: npc_name}`)
+- `config.json`에 별도 저장하지 않음 — `npcPrompt.json`이 단일 출처
 
 ### 공통
 - 각 모듈(router, search, persona, llm)을 조합하는 역할만 담당

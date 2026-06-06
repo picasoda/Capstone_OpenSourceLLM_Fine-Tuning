@@ -13,5 +13,9 @@
   "search": {
     "top_k": 3,
     "threshold": 0.4
+  },
+  "instructions": {
+    "no_result": "관련 정보를 찾지 못했습니다. NPC의 말투와 성격을 유지하면서 모른다고 솔직하게 답하십시오.",
+    "permission_gap": "해당 질문의 세부 정보는 전문가 NPC만 알 수 있습니다. NPC 말투로 간략히 답하고, {expert}에게 안내하십시오."
   }
 }

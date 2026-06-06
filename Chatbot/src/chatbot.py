@@ -1,9 +1,18 @@
 from __future__ import annotations
 
+import json
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
+
+_NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcPrompt.json")
+with open(_NPC_DATA_PATH, encoding="utf-8") as _f:
+    _CATEGORY_EXPERTS: dict[str, str] = {
+        cat: npc["name"]
+        for npc in json.load(_f)
+        for cat in npc.get("detail_categories", [])
+    }
 
 from llm import generate
 from persona import (
@@ -23,10 +32,22 @@ def _format_context(results: list[dict]) -> str:
 
 
 def _has_permission_gap(results: list[dict], npc: dict) -> bool:
-    """category_detail NPC가 권한 밖 카테고리 결과를 받은 경우."""
-    if npc.get("knowledge_scope") != "category_detail":
+    """전문가 NPC가 권한 밖 카테고리 결과를 받은 경우."""
+    if not npc.get("detail_categories"):
         return False
     return any(r.get("permission") == "common_only" for r in results)
+
+
+def _get_redirect_expert(results: list[dict], npc: dict) -> str | None:
+    """권한 밖 카테고리를 담당하는 전문가 NPC명 반환."""
+    npc_name = npc["name"]
+    experts: set[str] = set()
+    for r in results:
+        if r.get("permission") == "common_only":
+            expert = _CATEGORY_EXPERTS.get(r.get("category", ""))
+            if expert and expert != npc_name:
+                experts.add(expert)
+    return ", ".join(experts) if experts else None
 
 
 _SEARCH_FN = {
@@ -61,6 +82,7 @@ def chat(npc_name: str, message: str) -> str:
     # 정보 라우트: 각 라우트마다 검색 후 컨텍스트 합산
     contexts: dict[str, str] = {}
     has_permission_gap = False
+    redirect_expert: str | None = None
     all_empty = True
 
     for route in routes:
@@ -72,6 +94,7 @@ def chat(npc_name: str, message: str) -> str:
             contexts[label] = _format_context(results)
             if route == "item_query" and _has_permission_gap(results, npc):
                 has_permission_gap = True
+                redirect_expert = _get_redirect_expert(results, npc)
         else:
             contexts[label] = ""
 
@@ -80,7 +103,7 @@ def chat(npc_name: str, message: str) -> str:
     if all_empty:
         prompt = append_no_result_instruction(prompt)
     elif has_permission_gap:
-        prompt = append_permission_instruction(prompt)
+        prompt = append_permission_instruction(prompt, redirect_expert)
 
     try:
         return generate(prompt, message)

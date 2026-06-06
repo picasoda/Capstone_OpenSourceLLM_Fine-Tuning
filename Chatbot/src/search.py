@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from embedder import get_embedder
 
 DB_DIR = os.path.join(os.path.dirname(__file__), "..", "db")
-NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
+NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcPrompt.json")
 
 _CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "config.json")
 with open(_CONFIG_PATH, encoding="utf-8") as _f:
@@ -61,7 +61,6 @@ def _query_collection(collection_name: str, query: str) -> list[dict]:
 
 
 def filter_by_permission(hits: list[dict], npc: dict) -> list[dict]:
-    scope = npc.get("knowledge_scope", "common_only")
     detail_categories = set(npc.get("detail_categories", []))
 
     filtered = []
@@ -69,36 +68,21 @@ def filter_by_permission(hits: list[dict], npc: dict) -> list[dict]:
         meta = hit["metadata"]
         category = meta.get("category", "")
 
-        if scope == "common_only":
+        if detail_categories and category in detail_categories:
             filtered.append({
                 "name": meta.get("name", ""),
-                "content": meta.get("common", ""),
+                "content": meta.get("common", "") + "\n" + meta.get("detail", ""),
                 "score": hit["score"],
-                "permission": "common_only",
+                "permission": "full",
+                "category": category,
             })
-        elif scope == "category_detail":
-            if category and category in detail_categories:
-                filtered.append({
-                    "name": meta.get("name", ""),
-                    "content": meta.get("common", "") + "\n" + meta.get("detail", ""),
-                    "score": hit["score"],
-                    "permission": "full",
-                    "category": category,
-                })
-            else:
-                filtered.append({
-                    "name": meta.get("name", ""),
-                    "content": meta.get("common", ""),
-                    "score": hit["score"],
-                    "permission": "common_only",
-                    "category": category,
-                })
         else:
             filtered.append({
                 "name": meta.get("name", ""),
                 "content": meta.get("common", ""),
                 "score": hit["score"],
                 "permission": "common_only",
+                "category": category,
             })
 
     return filtered
@@ -116,14 +100,10 @@ def search_npc(query: str, npc: str) -> list[dict]:
     hits = _query_collection("npcs", query)
     if not hits:
         return []
-    # NPC 정보는 항상 common 수준으로 반환
     return [
         {
             "name": h["metadata"].get("name", ""),
-            "content": (
-                h["metadata"].get("personality", "") + " " +
-                h["metadata"].get("background", "")
-            ).strip(),
+            "content": h["metadata"].get("common", ""),
             "score": h["score"],
             "permission": "common_only",
         }

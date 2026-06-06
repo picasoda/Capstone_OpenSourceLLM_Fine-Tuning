@@ -3,7 +3,18 @@ from __future__ import annotations
 import json
 import os
 
-NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
+NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcPrompt.json")
+_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "config.json")
+
+_config_cache: dict | None = None
+
+
+def _load_config() -> dict:
+    global _config_cache
+    if _config_cache is None:
+        with open(_CONFIG_PATH, encoding="utf-8") as f:
+            _config_cache = json.load(f)
+    return _config_cache
 
 _npc_cache: dict[str, dict] | None = None
 
@@ -29,19 +40,13 @@ def get_npc(name: str) -> dict:
 
 def _base_prompt(npc: dict) -> str:
     return (
-        f"당신은 판타지 세계 알데란 왕국의 NPC '{npc['name']}({npc['job']})'입니다.\n"
+        f"당신은 판타지 세계 알데란 영지의 NPC '{npc['name']}({npc['job']})'입니다.\n"
         f"성격: {npc['personality']}\n"
         f"말투: {npc['tone']}\n"
         f"배경: {npc['background']}\n"
         "절대로 현대 기술, AI, 인터넷 등 시대에 맞지 않는 내용을 언급하지 마십시오.\n"
         "항상 NPC의 말투와 성격을 유지하십시오."
     )
-
-
-def _tone_rules(npc: dict) -> str:
-    """말투·문장 길이 규칙 — 모든 라우트에 적용."""
-    rule = npc.get("tone_rule", "")
-    return f"\n{rule}" if rule else ""
 
 
 def _item_tone_rules(npc: dict) -> str:
@@ -54,7 +59,6 @@ def build_chitchat_prompt(npc_name: str) -> str:
     npc = get_npc(npc_name)
     return (
         _base_prompt(npc)
-        + _tone_rules(npc)
         + "\n자유로운 대화에 NPC 성격에 맞게 자연스럽게 응답하십시오."
     )
 
@@ -82,7 +86,7 @@ def build_combined_query_prompt(npc_name: str, contexts: dict[str, str]) -> str:
         if content:
             sections += f"\n\n[{label}]\n{content}"
 
-    prompt = _base_prompt(npc) + _tone_rules(npc)
+    prompt = _base_prompt(npc)
     if has_item:
         prompt += _item_tone_rules(npc)
     prompt += sections
@@ -97,16 +101,11 @@ def build_jailbreak_prompt(npc_name: str) -> str:
 
 
 def append_no_result_instruction(base_prompt: str) -> str:
-    return (
-        base_prompt
-        + "\n\n[지시] 관련 정보를 찾지 못했습니다. "
-        "NPC의 말투와 성격을 유지하면서 모른다고 솔직하게 답하십시오."
-    )
+    text = _load_config()["instructions"]["no_result"]
+    return base_prompt + f"\n\n[지시] {text}"
 
 
-def append_permission_instruction(base_prompt: str) -> str:
-    return (
-        base_prompt
-        + "\n\n[지시] 해당 질문의 세부 정보는 전문가 NPC만 알 수 있습니다. "
-        "NPC 말투로 간략히 답하고, 전문가(약초상 또는 대장장이)에게 안내하십시오."
-    )
+def append_permission_instruction(base_prompt: str, expert: str | None = None) -> str:
+    template = _load_config()["instructions"]["permission_gap"]
+    text = template.format(expert=expert if expert else "담당 전문가")
+    return base_prompt + f"\n\n[지시] {text}"

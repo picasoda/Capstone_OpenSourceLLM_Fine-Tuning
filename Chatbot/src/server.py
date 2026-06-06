@@ -42,7 +42,7 @@ app.add_middleware(
     allow_headers=["Content-Type"],
 )
 
-_NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcs.json")
+_NPC_DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "npcPrompt.json")
 
 with open(_NPC_DATA_PATH, encoding="utf-8") as _f:
     _npcs = json.load(_f)

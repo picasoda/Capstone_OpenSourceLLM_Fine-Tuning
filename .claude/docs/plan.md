@@ -1,40 +1,38 @@
-# 캡스톤 보고서 작성 계획
+# npcs.json 구조 변경 계획
 
-## 목적
-- 팀원이 PPT 슬라이드 구성에 바로 활용 가능
-- 본인이 캡스톤 최종 보고서 작성에 활용 가능
-- 분량: A4 2~3페이지 (마크다운 기준)
-- 독자: 전공자, 개발 경험 있음 (용어 설명 불필요, 설계 의도 설명 필요)
+## 완료된 변경
 
----
+### 1. `tone_rule` → `tone`에 병합
+- `npcPrompt.json`: `tone` 끝에 `tone_rule` 내용 이어붙임, `tone_rule` 필드 삭제
+- `persona.py`: `_tone_rules()` 함수 및 호출부 제거
 
-## 보고서 구성 (섹션 순서)
+### 2. `knowledge_scope` 제거
+- `npcPrompt.json`: `knowledge_scope` 필드 삭제
+- `search.py` `filter_by_permission`: `detail_categories` 비어있는지 여부로 분기
+- `chatbot.py` `_has_permission_gap`: `knowledge_scope` 참조 제거
 
-### 1. 시스템 구조 (구조도 + 표)
-- 전체 파이프라인을 텍스트 흐름도로 표현
-- 모듈 분리 이유 설명 (각 모듈이 왜 독립적으로 분리되어 있는지)
-- 핵심 모듈 역할 요약 표
+### 3. `item_tone_rule` 내용 수정
+- `npcPrompt.json`: 권한·리다이렉션 문구 제거, 아이템 답변 방향성만 남김
 
-### 2. 핵심 설계 결정 (설계 의도 중심)
-항목별로 "선택한 방식 + 왜 그렇게 했는가" 형식으로 서술
-- 권한 필터링을 LLM 이전에 적용한 이유
-- softmax 기반 라우팅을 선택한 이유
-- 복수 라우트 반환 구조를 선택한 이유
-- 임베딩 모델 싱글톤 공유를 선택한 이유
+### 4. 파일 구조 재편
+- `data/npcs.json` → `data/npcPrompt.json`
+- `data/content/npcs.json` 신규 생성 (`id`, `name`, `common` 구조)
+- `persona.py`, `search.py`, `server.py`: 경로 → `npcPrompt.json`
+- `ingest.py` `ingest_npcs()`: `content/npcs.json` 읽도록 변경
+- `search.py` `search_npc()`: `common` 필드로 변경
 
-### 3. 데이터 구조 (간결한 표)
-- 각 JSON 파일의 역할과 핵심 필드만
-- common/detail 분리 구조의 의도 설명
-- NPC별 권한 구조 표
+### 5. `append_permission_instruction` NPC-aware + 지시 텍스트 외부화
+- `config.json`: `instructions` (no_result, permission_gap 템플릿) 추가
+- `persona.py`: config에서 텍스트 로드, `append_permission_instruction(base, expert)` 시그니처 변경
+- `chatbot.py`: `_get_redirect_expert()` 추가, expert 전달
 
-### 4. 작동 시나리오 (예시 2~3개)
-- 일반 질문: "포션이 뭐야?" → 어떤 경로로 처리되는지
-- 복합 질문: "마사가 파는 포션이 뭐야?" → 복수 라우트 처리
-- 탈옥 시도: "너 AI지?" → jailbreak 처리
-
----
-
-## 작성 원칙
-- 코드 없음
-- 각 설계 결정마다 "왜"를 반드시 포함
-- 표와 흐름 서술을 혼합하여 PPT 슬라이드로 바로 옮길 수 있게
+### 6. `category_experts` 중복 제거
+- `config.json`: `category_experts` 섹션 삭제
+- `chatbot.py`: `npcPrompt.json`의 `detail_categories`에서 런타임 역방향 빌드
+  ```python
+  _CATEGORY_EXPERTS = {
+      cat: npc["name"]
+      for npc in json.load(_f)
+      for cat in npc.get("detail_categories", [])
+  }
+  ```
